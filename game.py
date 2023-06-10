@@ -107,8 +107,8 @@ def game_instance(agent=None, render=False):
         state = np.array((bird.rect.y, 
             bird.velocity, 
             pipe_bot.rect.x, 
-            pipe_bot.rect.y, 
-            int(running))).reshape((5, 1))
+            pipe_bot.y, 
+            int(running)))
         action = 0
 
         # Process input/events
@@ -135,12 +135,12 @@ def game_instance(agent=None, render=False):
             running = False
 
         # record state after action
-        state_post = np.array((bird.velocity, 
-            bird.rect.y, 
+        state_post = np.array((bird.rect.y, 
+            bird.velocity, 
             pipe_bot.rect.x, 
-            pipe_bot.rect.y, 
-            int(running))).reshape((5, 1))
-        reward = 1 if running else 0
+            pipe_bot.y, 
+            int(running)))
+        reward = 1 if running else -10
 
         # record action/reward/state/sucessor
         data.append([action, reward, state, state_post])
@@ -150,7 +150,7 @@ def game_instance(agent=None, render=False):
         all_sprites.draw(screen)
         if render:
             pygame.display.flip()
-    # print(time)
+
     # Quit the game
     pygame.quit()
     
