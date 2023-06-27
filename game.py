@@ -14,6 +14,7 @@ PIPE_GAP = 200
 PIPE_SPEED = 3
 HOLE_MARGIN = 0.25
 PIPE_WIDTH = 100
+MAX_TIME = 1000
 #LIVING_REWARD
 
 # Colors
@@ -22,6 +23,9 @@ BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+LINE_COLOR = (255, 255, 0)  # Yellow color for the line
+
+random.seed(10)
 
 
 class Bird(pygame.sprite.Sprite):
@@ -61,12 +65,13 @@ class Pipe(pygame.sprite.Sprite):
     def update(self):
         self.rect.x -= PIPE_SPEED
         if self.rect.right < 0: 
-            self.kill() 
+            self.kill()
+            del self
 
 def game_instance(agent=None, render=False):
+    random.seed(10)
     # Initialize pygame and create a window
     pygame.init()
-    pygame.mixer.init()
     if render:
         screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Flappy Bird")
@@ -81,13 +86,17 @@ def game_instance(agent=None, render=False):
     bird = Bird()
     all_sprites.add(bird)
 
-    # store action/reward/state/sucessor
+    # Store action/reward/state/sucessor
     data = []
+
+    # Draw random jumping rate
+    jump_prob = random.randint(15, 25)
 
     # Game loop
     running = True
     time = 0
-    while running:
+    passes = False
+    while running and time < MAX_TIME:
         time += 1
         # Keep the loop running at the right speed
         if render:
@@ -97,6 +106,7 @@ def game_instance(agent=None, render=False):
         
         # Generate new pipes
         if len(pipes) == 0:
+            passed = False
             y = random.uniform(HOLE_MARGIN * HEIGHT, (1 - HOLE_MARGIN) * HEIGHT)
             pipe_bot = Pipe(y, top_or_bot="bot")
             pipe_top = Pipe(y, top_or_bot="top")
@@ -104,11 +114,10 @@ def game_instance(agent=None, render=False):
             all_sprites.add([pipe_bot, pipe_top])
 
         # record state before action
-        state = np.array((bird.rect.y, 
-            bird.velocity, 
-            pipe_bot.rect.x, 
-            pipe_bot.y, 
-            int(running)))
+        state = np.array(((pipe_bot.rect.bottomleft[1] - bird.rect.center[1]), 
+            (bird.velocity), 
+            (pipe_bot.rect.topleft[0] - bird.rect.center[0]), 
+            (pipe_top.rect.topleft[1] - bird.rect.center[1])))
         action = 0
 
         # Process input/events
@@ -121,7 +130,7 @@ def game_instance(agent=None, render=False):
                         bird.jump()
                         action = 1
         
-        if agent != None and agent.get_action(state):
+        if agent != None and agent.get_action(state, jump_prob):
             bird.jump()
             action = 1
 
@@ -135,23 +144,42 @@ def game_instance(agent=None, render=False):
             running = False
 
         # record state after action
-        state_post = np.array((bird.rect.y, 
-            bird.velocity, 
-            pipe_bot.rect.x, 
-            pipe_bot.y, 
-            int(running)))
-        reward = 1 if running else -10
+        state_post = np.array(((pipe_bot.rect.bottomleft[1] - bird.rect.center[1]), 
+            (bird.velocity), 
+            (pipe_bot.rect.topleft[0] - bird.rect.center[0]), 
+            (pipe_top.rect.topleft[1] - bird.rect.center[1])))
+        reward = 0.1
+        if bird.rect.center[0] > pipe_bot.rect.bottomleft[0]\
+            and not passed:
+            passed = True
+            reward = 1
+            print("hey")
+        if not running:
+            reward = -1
+            state_post = (0, 0, 0, 0)
 
         # record action/reward/state/sucessor
         data.append([action, reward, state, state_post])
 
         # Draw/render
+
         screen.fill(BLUE)
         all_sprites.draw(screen)
-        if render:
+        if render and len(pipes) > 0:
+            pygame.draw.line(screen, LINE_COLOR, bird.rect.center, (pipe_bot.rect.center[0], pipe_bot.y))
+            pygame.draw.line(screen, LINE_COLOR, bird.rect.center, (pipe_bot.rect.topleft[0], bird.rect.center[1]))
+            pygame.draw.line(screen, LINE_COLOR, bird.rect.center, (bird.rect.center[0], pipe_top.rect.topleft[1]))
+            pygame.draw.line(screen, LINE_COLOR, bird.rect.center, (bird.rect.center[0], pipe_bot.rect.bottomleft[1]))
+
             pygame.display.flip()
+    del bird
+    del screen
+    
+    all_sprites.empty()
+    pipes.empty()
 
     # Quit the game
+    pygame.display.quit()
     pygame.quit()
     
-    return data
+    return time, data
