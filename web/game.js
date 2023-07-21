@@ -1,24 +1,9 @@
-// Game Constants
-const WIDTH = 300;
-const HEIGHT = 500;
-const BIRD_DIM = 25;
-const FPS = 60;
-const FPS_NORENDER = 1000;
-const GRAVITY = 0.5;
-const JUMP_FORCE = 8;
-const PIPE_GAP = 100;
-const PIPE_SPEED = 3;
-const HOLE_MARGIN = 0.25;
-const PIPE_WIDTH = 50;
-const SPACEBAR_CODE = 32
-
-// Colors
-const WHITE = "#ffffff";
-const BLACK = "#000000";
-const BLUE = "#000000";
-const GREEN = "#00ff00";
-const RED = "#ff0000";
-const LINE_COLOR = "#ffff00";
+// Constants
+import { WIDTH, HEIGHT, BIRD_DIM, FPS, FPS_NORENDER, GRAVITY, JUMP_FORCE, 
+  PIPE_GAP, PIPE_SPEED, HOLE_MARGIN, PIPE_WIDTH, SPACEBAR_CODE, BACKGROUND, 
+  PIPES_COLOR, BIRD_COLOR, LINE_COLOR, BLACK, OFFBLACK } from "http://127.0.0.1:5500/web/constants.js"
+import { load_models, plot_heatmap, update_data } from "http://127.0.0.1:5500/web/heatmap.js"
+import { generateNodesLinks, myGraph } from "http://127.0.0.1:5500/web/graph.js"
 
 // Bird class
 class Bird {
@@ -64,24 +49,6 @@ function generatePipes() {
   return [pipe_bot, pipe_top]
 }
 
-// Function to create time counter element
-function createTimeCounter(document, canvas) {
-  // Get the absolute coordinates of the top-left corner
-  const canvasRect = canvas.getBoundingClientRect();
-  const canvasTop = canvasRect.top + window.pageYOffset;
-  const canvasRight = canvasRect.right + window.pageXOffset;
-
-  // Create a counter element
-  const timeCounter = document.createElement("div");
-  timeCounter.style.position = "absolute";
-  timeCounter.style.top = canvasTop + "px";
-  timeCounter.style.right = canvasRight + "px";
-  timeCounter.style.color = BLACK;
-  timeCounter.style.fontSize = "24px";
-  document.body.appendChild(timeCounter);
-  return timeCounter
-}
-
 // Function to check for collisions
 function checkCollision(pipes, bird) {
   return (
@@ -103,11 +70,11 @@ function checkCollision(pipes, bird) {
 // Function to draw
 function draw(context, pipes, bird) {
   // Draw, render
-  context.fillStyle = BLUE;
+  context.fillStyle = BACKGROUND;
   context.fillRect(0, 0, WIDTH, HEIGHT);
-  context.fillStyle = RED;
+  context.fillStyle = BIRD_COLOR;
   context.fillRect(bird.x, bird.y, BIRD_DIM, BIRD_DIM);
-  context.fillStyle = GREEN;
+  context.fillStyle = PIPES_COLOR;
   pipes.forEach((pipe) => {
     if (pipe.topOrBot === "bot") {
       context.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.height);
@@ -126,12 +93,32 @@ function draw(context, pipes, bird) {
   }
 }
 
-function gameInstance(agent = null, render = false, canvas, context) {
+// Function to create the canvas
+function create_canvas() {
+  // Create canvas element
+  const canvas_col = document.getElementById("game")
+  const canvas = document.createElement("canvas");
+
+  canvas_col.appendChild(canvas);
+  const context = canvas.getContext("2d");
+  canvas.width = WIDTH;
+  canvas.height = HEIGHT;
+  context.fillStyle = BACKGROUND;
+  context.fillRect(0, 0, WIDTH, HEIGHT);
+
+  return [canvas, context]
+}
+
+function gameInstance(agent=null, 
+  render=false, 
+  canvas, 
+  context, 
+  svg, x, y, button) {
 
   // Create game objects and control variables
+  const data = [];
   const bird = new Bird();
   var pipes = [];
-  const data = [];
   let running = true;
   let time = 0;
   let passed = false;
@@ -146,18 +133,18 @@ function gameInstance(agent = null, render = false, canvas, context) {
   });
 
   // Create counter element
-  timeCounter = createTimeCounter(document, canvas)
+  const timeCounter = document.getElementById("counter")
 
   function gameLoop() {
     // Elapse time
     time += 1;
     let action = 0;
-    timeCounter.innerText = "Time: " + time;
+    timeCounter.innerText = "Score: " + time;
 
     // Generate new pipes
     if (pipes.length === 0) {
       passed = false;
-      [pipe_bot, pipe_top] = generatePipes()
+      var [pipe_bot, pipe_top] = generatePipes()
       pipes.push(pipe_bot, pipe_top);
     }
 
@@ -206,70 +193,98 @@ function gameInstance(agent = null, render = false, canvas, context) {
     // Record action/reward/state/successor
     data.push([action, reward, state, state_post]);
 
+    // Draw, render
+    draw(context, pipes, bird);
+
+    // Update heatmap
+    if (time % 1  == 0) {
+      update_data(model_promises, pipes[0].y, pipes[0].x - bird.x, svg, x, y);
+    }
+
     // Delete pipe if it is off screen.
     if (pipes[0].x + PIPE_WIDTH < 0) {
       pipes = []
     }
-
-    // Draw, render
-    draw(context, pipes, bird)
     
     // Animation, or end game
     if (running) {
       requestAnimationFrame(gameLoop);
     } else {
+      button.style.visibility = 'visible';
       return [time, data];
     }
   }
   gameLoop();
 }
 
-function create_canvas() {
-  // Create canvas element
-  const canvas_container = document.createElement("div");
-  canvas_container.style.border = "10px solid yellow";
-  const canvas = document.createElement("canvas");
-  canvas_container.appendChild(canvas);
-  const context = canvas.getContext("2d");
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
-  document.body.appendChild(canvas_container)
-  context.fillStyle = BLUE;
-  context.fillRect(0, 0, WIDTH, HEIGHT);
-
-  return [canvas, context]
-}
-
-function showStartScreen() {
-  // Create canvas element
-  const [canvas, context] = create_canvas()
+function showStartScreen(num) {
+  // Create canvas and heatmap
+  const [canvas, context] = create_canvas(num)
+  var [svg, x, y] = plot_heatmap();
 
   // Create a container div for centering the button
   const container = document.createElement("div");
   const canvasRect = canvas.getBoundingClientRect();
 
-  // Get the absolute coordinates of the top-left corner
-  const canvasTop = canvasRect.top + window.pageYOffset;
-  const canvasLeft = canvasRect.left + window.pageXOffset;
-
+  // Create a container div for centering the button
   container.style.position = "absolute";
-  container.style.top = canvasTop + "px"
-  container.style.left = canvasLeft + "px"
-  container.style.width = canvas.width + "px";
-  container.style.height = canvas.height + "px";
+  container.style.top = `${canvasRect.top}px`;
+  container.style.left = `${canvasRect.left}px`;
+  container.style.width = `${canvasRect.width}px`;
+  container.style.height = `${canvasRect.height}px`;
+  container.style.display = "flex";
+  container.style.justifyContent = "center";
+  container.style.alignItems = "center";
   document.body.appendChild(container);
 
   // Create the start button
   const startButton = document.createElement("button");
   startButton.innerText = "Start Game";
+  startButton.classList.add("bg-gray-100", 
+    "hover:bg-gray-400", "text-black", 
+    "font-semibold", "py-2", "px-4", "border-b-4", 
+    "border-gray-700", "hover:border-gray-500", 
+    "rounded", "text-2xl", "font-mono")
+  
   startButton.addEventListener("click", () => {
+    startButton.style.visibility = 'hidden';
     // Remove start button and start the game
-    document.body.removeChild(container);
-    gameInstance(null, true, canvas, context);
-    document.body.appendChild(container);
+    gameInstance(null, true, canvas, context, svg, x, y, startButton);
   });
   container.appendChild(startButton);
 }
 
-showStartScreen();
-showStartScreen();
+function extractWeights(model_promises) {
+  const netLayers = model_promises[0].then((data) => {
+    const layers = data.layers;
+    const nodes = layers.map((el) => {
+      if (el.id != 0) {
+        return {
+          id: el.id,
+          size: el.units,
+          weights: el.getWeights()[0].array(), 
+          biases: el.getWeights()[1].array()
+        }
+      }
+
+      else {
+        return {
+          id: el.id, 
+          size: el.inputSpec[0].shape[1], 
+          weights: Promise.resolve([1]), 
+          biases: Promise.resolve([1])
+        }
+      }
+    })
+    return nodes
+  })
+  return netLayers
+}
+
+const model_promises = load_models();
+const layers = extractWeights(model_promises);
+var nodesLinks = generateNodesLinks(layers);
+nodesLinks.then((data) => {
+  myGraph(data[0], data[1])
+})
+showStartScreen(1);

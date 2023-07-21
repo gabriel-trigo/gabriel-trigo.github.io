@@ -1,0 +1,1 @@
+{"eps_start": 1.0, "eps_stop": 0.1, "eps_decay": 0.999, "gamma": 0.9, "hidden_size": 10, "lr": 0.0004493109901199042, "lr_decay": 0.9999, "lr_stop": 0.0001, "eps": 0.1}
