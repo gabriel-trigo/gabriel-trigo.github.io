@@ -1,9 +1,9 @@
 // Constants
 import { WIDTH, HEIGHT, BIRD_DIM, FPS, FPS_NORENDER, GRAVITY, JUMP_FORCE, 
   PIPE_GAP, PIPE_SPEED, HOLE_MARGIN, PIPE_WIDTH, SPACEBAR_CODE, BACKGROUND, 
-  PIPES_COLOR, BIRD_COLOR, LINE_COLOR, BLACK, OFFBLACK } from "http://gabriel-trigo.github.io/constants.js"
-import { load_models, plot_heatmap, update_data, predict } from "http://gabriel-trigo.github.io/heatmap.js"
-import { generateNodesLinks, myGraph } from "http://gabriel-trigo.github.io/graph.js"
+  PIPES_COLOR, BIRD_COLOR, LINE_COLOR, BLACK, OFFBLACK } from "https://gabriel-trigo.github.io/constants.js"
+import { load_models, plot_heatmap, update_data, predict } from "https://gabriel-trigo.github.io/heatmap.js"
+import { generateNodesLinks, myGraph } from "https://gabriel-trigo.github.io/graph.js"
 
 // Bird class
 class Bird {
