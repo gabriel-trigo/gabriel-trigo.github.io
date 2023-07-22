@@ -55,7 +55,7 @@ def train_sprint(prev_model=None,
         json.dump(scores_dict, json_file)
 
 
-train_sprint(results_folder="trial_jun-27-2", 
+train_sprint(results_folder="trial_jul-21-5", 
     num_games=10000, 
     render_every=50, 
     batch_size=32, 

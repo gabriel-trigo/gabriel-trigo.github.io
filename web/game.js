@@ -2,7 +2,7 @@
 import { WIDTH, HEIGHT, BIRD_DIM, FPS, FPS_NORENDER, GRAVITY, JUMP_FORCE, 
   PIPE_GAP, PIPE_SPEED, HOLE_MARGIN, PIPE_WIDTH, SPACEBAR_CODE, BACKGROUND, 
   PIPES_COLOR, BIRD_COLOR, LINE_COLOR, BLACK, OFFBLACK } from "http://127.0.0.1:5500/web/constants.js"
-import { load_models, plot_heatmap, update_data } from "http://127.0.0.1:5500/web/heatmap.js"
+import { load_models, plot_heatmap, update_data, predict } from "http://127.0.0.1:5500/web/heatmap.js"
 import { generateNodesLinks, myGraph } from "http://127.0.0.1:5500/web/graph.js"
 
 // Bird class
@@ -113,7 +113,7 @@ function gameInstance(agent=null,
   render=false, 
   canvas, 
   context, 
-  svg, x, y, button) {
+  svg, x, y, button, nodesLinks) {
 
   // Create game objects and control variables
   const data = [];
@@ -128,7 +128,7 @@ function gameInstance(agent=null,
     if (event.keyCode === SPACEBAR_CODE) {
       event.preventDefault();
       bird.jump();
-      action = 1;
+      let action = 1;
     }
   });
 
@@ -155,6 +155,14 @@ function gameInstance(agent=null,
       pipes[0].x - bird.x,
       pipes[1].y - bird.y,
     ];
+
+    var result = predict(model_promises[4], [state])
+    result.then((resData) => {
+      const values = resData.arraySync()
+      var l = nodesLinks[0].length
+      nodesLinks[0][l - 1].name = values[0][0]
+      nodesLinks[0][l - 2].name = values[0][1]
+    })
 
     // Process input/events
     if (agent !== null && agent.get_action(state, jump_prob)) {
@@ -192,6 +200,11 @@ function gameInstance(agent=null,
 
     // Record action/reward/state/successor
     data.push([action, reward, state, state_post]);
+    nodesLinks[0][0].name = state_post[0]
+    nodesLinks[0][1].name = state_post[1]
+    nodesLinks[0][2].name = state_post[2]
+    nodesLinks[0][3].name = state_post[3]
+
 
     // Draw, render
     draw(context, pipes, bird);
@@ -217,7 +230,7 @@ function gameInstance(agent=null,
   gameLoop();
 }
 
-function showStartScreen(num) {
+function showStartScreen(num, data) {
   // Create canvas and heatmap
   const [canvas, context] = create_canvas(num)
   var [svg, x, y] = plot_heatmap();
@@ -249,7 +262,7 @@ function showStartScreen(num) {
   startButton.addEventListener("click", () => {
     startButton.style.visibility = 'hidden';
     // Remove start button and start the game
-    gameInstance(null, true, canvas, context, svg, x, y, startButton);
+    gameInstance(null, true, canvas, context, svg, x, y, startButton, data);
   });
   container.appendChild(startButton);
 }
@@ -286,5 +299,9 @@ const layers = extractWeights(model_promises);
 var nodesLinks = generateNodesLinks(layers);
 nodesLinks.then((data) => {
   myGraph(data[0], data[1])
+  setTimeout(() => {
+    console.log("After 5 seconds");
+  }, 1);
+
+  showStartScreen(1, data);
 })
-showStartScreen(1);

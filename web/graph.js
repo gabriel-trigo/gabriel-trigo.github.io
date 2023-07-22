@@ -8,7 +8,7 @@ export function generateNodesLinks(layers) {
             var links = []
             for (var i = 0; i < data.length; i++) {
                 for (var j = 0; j < data[i].size; j++) {
-                    nodes.push({id: "" + i + j})
+                    nodes.push({id: "" + i + j, name: ""})
                     if (i > 0) {
                         for (var k=0; k < data[i - 1].size; k++) {
                             links.push({source: "" + (i - 1) + k, target: "" + i + j, 
@@ -23,6 +23,8 @@ export function generateNodesLinks(layers) {
     })
     return nodesLinks
 }
+
+
 
 var data = {
     nodes: [
@@ -50,6 +52,9 @@ export function myGraph(nodes, links) {
     .force("charge", d3.forceManyBody().strength(-300))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
+    simulation.alpha(0.1)
+    simulation.alphaDecay(0)
+
     simulation.nodes(nodes);
     simulation.force("link").links(links);
 
@@ -61,28 +66,65 @@ export function myGraph(nodes, links) {
     .data(links)
     .enter()
     .append("line")
-    .attr("stroke", "black")
+    .attr("stroke", "pink")
     .attr("stroke-width", (d) => d.weight);
 
-    var node = svg.append("g")
-    .selectAll("circle")
-    .data(nodes)
-    .enter()
-    .append("circle")
-    .attr("r", 10)
-    .attr("fill", "blue");
+    const colorScale = d3.scaleOrdinal(d3.schemeCategory10)
+  .domain(nodes.map((d) => d.id.charAt(0)));
 
+    var node = svg.append("g")
+        .selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("r", 10)
+        .attr("fill", (d) => {
+            if (d.id.charAt(0) == '0') {
+                return "#f6fff8"
+            }
+            if (d.id.charAt(0) == '1') {
+                return "#efc88b"
+            }
+
+            if (d.id.charAt(0) == '2') {
+                return "#6b9080"
+            }
+            return "#ff90b3"
+        });
+
+    // Node labels.
+    var nodeLabels = svg
+      .append('g')
+      .attr('class', 'node-labels')
+      .selectAll('text')
+      .data(nodes)
+      .enter()
+      .append('text')
+      .attr('x', (d) => d.x + 10)
+      .attr('y', (d) => d.y + 10)
+      .attr('fill', () => "white")
+      .style('font-family', 'Consolas, monospace') // Set the font-family to Consolas
+      .text((d) => d.name);
 
     simulation.on("tick", function() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+        link
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
 
-    node
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+        node
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+
+        nodeLabels
+            .attr('x', (d) => d.x + 10)
+            .attr('y', (d) => d.y + 10)
+            .text((d) => d.name)
+
+        if (node.id == "30") {
+            console.log("hey")
+        }
     });
     
 
@@ -113,5 +155,5 @@ export function myGraph(nodes, links) {
         d.fy = null;
     }
 
-    simulation.alpha(1).restart();
+    simulation.alpha(0.1).restart();
 }

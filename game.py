@@ -3,17 +3,17 @@ import random
 import numpy as np
 
 # Game Constants
-WIDTH = 600
-HEIGHT = 600
-BIRD_DIM = 50
+WIDTH = 300
+HEIGHT = 400
+BIRD_DIM = 25
 FPS = 60
 FPS_NORENDER = 1000
 GRAVITY = 0.5
 JUMP_FORCE = 8
-PIPE_GAP = 200
+PIPE_GAP = 100
 PIPE_SPEED = 3
 HOLE_MARGIN = 0.25
-PIPE_WIDTH = 100
+PIPE_WIDTH = 50
 MAX_TIME = 1000
 #LIVING_REWARD
 
@@ -25,7 +25,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 LINE_COLOR = (255, 255, 0)  # Yellow color for the line
 
-random.seed(10)
+random.seed(11)
 
 
 class Bird(pygame.sprite.Sprite):
@@ -69,7 +69,7 @@ class Pipe(pygame.sprite.Sprite):
             del self
 
 def game_instance(agent=None, render=False):
-    random.seed(10)
+    random.seed(11)
     # Initialize pygame and create a window
     pygame.init()
     if render:

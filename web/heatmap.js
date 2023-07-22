@@ -92,7 +92,7 @@ export function update_data(model_promises, pipe_y, pipe_x, svg, axisx, axisy) {
             positions.push([x - pipe_x + 500, y])
         }
     }
-    var result = predict(model_promises[0], states) // Evalute
+    var result = predict(model_promises[4], states) // Evalute
 
     // Build color scale
     var myColor = d3.scaleSequential()

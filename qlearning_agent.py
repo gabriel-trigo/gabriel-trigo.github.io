@@ -18,7 +18,7 @@ class RandomAgent():
 class QlearningAgent():
 
     def __init__(self, eps_start=1.0, 
-        eps_stop=0.05, 
+        eps_stop=0.01, 
         eps_decay=0.9999, 
         gamma=0.5, 
         hidden_size=5, 
