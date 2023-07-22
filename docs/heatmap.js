@@ -1,11 +1,11 @@
-import {HEATMAP_DIM, HEATMAP_MARGIN, PIPE_GAP} from "http://127.0.0.1:5500/web/constants.js"
+import {HEATMAP_DIM, HEATMAP_MARGIN, PIPE_GAP} from "http://http://gabriel-trigo.github.io/graph.js/constants.js"
 
 export function load_models() {
     const model_promises = []
     let model = null;
     for (var i = 0; i < 10; i += 2) {
         model = tf.loadLayersModel(
-            `http://127.0.0.1:5500/js_models/model_${i}/model.json`);
+            `http://http://gabriel-trigo.github.io/js_models/model_${i}/model.json`);
             model_promises.push(model);
     }
     console.log(model)
