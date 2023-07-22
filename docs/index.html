@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <title>Q-Learning Flappy Bird</title>
+      <!-- Load libraries -->
+      <script src="https://d3js.org/d3.v4.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0/dist/tf.min.js"></script>
+      <link href="output.css" rel="stylesheet">
+    </head>
+    <body class="bg-black flex">
+      <div class="basis-1/2 text-left text-gray-400 font-sans p-10">  
+        <h1 class="text-gray-200 text-3xl pb-5 font-semibold text-center">
+          About
+        </h1>
+        <div>
+          A casual implementation of the Q-learning algorithm, adapted for 
+          continuous state space with Q-value function approximation using the 
+          neural network below. The heatmap on the right shows the Q-values for 
+          each player position.
+        </div>
+        <svg class="block w-96 h-96 bg-black" id="graph"></svg>
+      </div>
+      <div class="flex basis-1/2 w-full">
+        <div class="basis1/2 p-5 font-mono" id="game">
+          <select id="myDropdown">
+            <option value="option1">Level 1</option>
+            <option value="option2">Level 2</option>
+            <option value="option3">Level 3</option>
+          </select>
+          <div id="counter" class="text-white inline-block float-right">
+            Score:   
+          </div>
+
+        </div>
+        <div class="basis-1/2 p-5 pt-24" id="heatmap">
+        </div>
+      </div>
+      <script src="http://127.0.0.1:5500/web/game.js" type="module"></script>
+      <script src="http://127.0.0.1:5500/web/heatmap.js" type="module"></script>
+      <script src="http://127.0.0.1:5500/web/graph.js" type="module"></script>
+    </body>
+  </html>
