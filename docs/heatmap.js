@@ -1,4 +1,4 @@
-import {HEATMAP_DIM, HEATMAP_MARGIN, PIPE_GAP} from "https://gabriel-trigo.github.io/graph.js/constants.js"
+import {HEATMAP_DIM, HEATMAP_MARGIN, PIPE_GAP} from "https://gabriel-trigo.github.io/constants.js"
 
 export function load_models() {
     const model_promises = []
