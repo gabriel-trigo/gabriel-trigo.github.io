@@ -3,12 +3,13 @@ import {HEATMAP_DIM, HEATMAP_MARGIN, PIPE_GAP} from "https://gabriel-trigo.githu
 export function load_models() {
     const model_promises = []
     let model = null;
-    for (var i = 0; i < 10; i += 2) {
+    for (var i = 0; i < 10; i += 1) {
         model = tf.loadLayersModel(
             `https://gabriel-trigo.github.io/js_models/model_${i}/model.json`);
-            model_promises.push(model);
+        model_promises.push(model);
+        console.log(model)
+
     }
-    console.log(model)
     return model_promises
 }
 
@@ -92,7 +93,7 @@ export function update_data(model_promises, pipe_y, pipe_x, svg, axisx, axisy) {
             positions.push([x - pipe_x + 500, y])
         }
     }
-    var result = predict(model_promises[4], states) // Evalute
+    var result = predict(model_promises[9], states) // Evalute
 
     // Build color scale
     var myColor = d3.scaleSequential()

@@ -41,9 +41,20 @@ class Pipe {
   }
 }
 
-class Agennt {
+class Agent {
   constructor(model) {
+    this.model = model
+  }
 
+  get_action(state) {
+    const inputs = tf.tensor2d([state], [1, 4])
+    var result = this.model.predict(inputs)
+    result = result.arraySync()
+    console.log(result)
+    if (result[0][0] > result[0][1]) {
+      return 0
+    }
+    return 1
   }
 }
 
@@ -96,6 +107,18 @@ function draw(context, pipes, bird) {
     context.moveTo(bird.x + BIRD_DIM / 2, bird.y + BIRD_DIM / 2);
     context.lineTo(pipes[0].x + PIPE_WIDTH / 2, pipes[0].y);
     context.stroke();
+
+    context.strokeStyle = LINE_COLOR;
+    context.beginPath();
+    context.moveTo(bird.x + BIRD_DIM / 2, bird.y + BIRD_DIM / 2);
+    context.lineTo(bird.x + BIRD_DIM / 2, pipes[0].y);
+    context.stroke();
+
+    context.strokeStyle = LINE_COLOR;
+    context.beginPath();
+    context.moveTo(bird.x + BIRD_DIM / 2, bird.y + BIRD_DIM / 2);
+    context.lineTo(bird.x + BIRD_DIM / 2, pipes[1].y);
+    context.stroke();
   }
 }
 
@@ -115,11 +138,12 @@ function create_canvas() {
   return [canvas, context]
 }
 
-function gameInstance(agent=null, 
+function gameInstance(agent=agent, 
   render=false, 
   canvas, 
   context, 
-  svg, x, y, button, nodesLinks) {
+  svg, x, y, button, nodesLinks, 
+  results) {
 
   // Create game objects and control variables
   const data = [];
@@ -156,13 +180,13 @@ function gameInstance(agent=null,
 
     // Record state before action
     const state = [
-      pipes[0].y - bird.y,
+      (pipes[0].y - PIPE_GAP / 2) - (bird.y + BIRD_DIM / 2),
       bird.velocity,
-      pipes[0].x - bird.x,
-      pipes[1].y - bird.y,
+      pipes[0].x - (bird.x + BIRD_DIM / 2),
+      (pipes[1].y + PIPE_GAP / 2) - (bird.y + BIRD_DIM / 2),
     ];
 
-    var result = predict(model_promises[4], [state])
+    var result = predict(model_promises[9], [state])
     result.then((resData) => {
       const values = resData.arraySync()
       var l = nodesLinks[0].length
@@ -171,7 +195,7 @@ function gameInstance(agent=null,
     })
 
     // Process input/events
-    if (agent !== null && agent.get_action(state, jump_prob)) {
+    if (agent !== null && agent.get_action(state)) {
       bird.jump();
       action = 1;
     }
@@ -187,10 +211,10 @@ function gameInstance(agent=null,
 
     // Record state after action
     var state_post = [
-      pipes[0].y - bird.y,
+      pipes[0].y - (bird.y + BIRD_DIM / 2),
       bird.velocity,
-      pipes[0].x - bird.x,
-      pipes[1].y - bird.y,
+      pipes[0].x - (bird.x + BIRD_DIM / 2),
+      pipes[1].y - (bird.y + BIRD_DIM / 2),
     ];
 
     // Define reward based on outcome
@@ -236,7 +260,7 @@ function gameInstance(agent=null,
   gameLoop();
 }
 
-function showStartScreen(num, data) {
+function showStartScreen(num, data, results, agent) {
   // Create canvas and heatmap
   const [canvas, context] = create_canvas(num)
   var [svg, x, y] = plot_heatmap();
@@ -268,7 +292,8 @@ function showStartScreen(num, data) {
   startButton.addEventListener("click", () => {
     startButton.style.visibility = 'hidden';
     // Remove start button and start the game
-    gameInstance(null, true, canvas, context, svg, x, y, startButton, data);
+    gameInstance(agent, true, canvas, context, svg, x, y, 
+      startButton, data, results);
   });
   container.appendChild(startButton);
 }
@@ -302,6 +327,7 @@ function extractWeights(model_promises) {
 
 const model_promises = load_models();
 Promise.all(model_promises).then((results) => {
+    var agent = new Agent(results[9]);
     const layers = extractWeights(model_promises);
     var nodesLinks = generateNodesLinks(layers);
     nodesLinks.then((data) => {
@@ -309,8 +335,7 @@ Promise.all(model_promises).then((results) => {
       setTimeout(() => {
         console.log("After 5 seconds");
       }, 1);
-
-      showStartScreen(1, data);
+      showStartScreen(1, data, results, agent);
     })
   }
 )
