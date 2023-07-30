@@ -301,13 +301,16 @@ function extractWeights(model_promises) {
 }
 
 const model_promises = load_models();
-const layers = extractWeights(model_promises);
-var nodesLinks = generateNodesLinks(layers);
-nodesLinks.then((data) => {
-  myGraph(data[0], data[1])
-  setTimeout(() => {
-    console.log("After 5 seconds");
-  }, 1);
+Promise.all(model_promises).then((results) => {
+    const layers = extractWeights(model_promises);
+    var nodesLinks = generateNodesLinks(layers);
+    nodesLinks.then((data) => {
+      myGraph(data[0], data[1])
+      setTimeout(() => {
+        console.log("After 5 seconds");
+      }, 1);
 
-  showStartScreen(1, data);
-})
+      showStartScreen(1, data);
+    })
+  }
+)
