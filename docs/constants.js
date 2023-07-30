@@ -1,15 +1,15 @@
 // Game Constants
-export const WIDTH = 300;
-export const HEIGHT = 400;
-export const BIRD_DIM = 25;
+export const WIDTH = 600;
+export const HEIGHT = 600;
+export const BIRD_DIM = 50;
 export const FPS = 60;
 export const FPS_NORENDER = 1000;
 export const GRAVITY = 0.5;
 export const JUMP_FORCE = 8;
-export const PIPE_GAP = 100;
+export const PIPE_GAP = 200;
 export const PIPE_SPEED = 3;
 export const HOLE_MARGIN = 0.25;
-export const PIPE_WIDTH = 50;
+export const PIPE_WIDTH = 100;
 export const SPACEBAR_CODE = 32
 export const HEATMAP_MARGIN = 30;
 export const HEATMAP_DIM = 350;

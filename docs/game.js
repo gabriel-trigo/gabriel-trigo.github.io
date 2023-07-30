@@ -41,6 +41,12 @@ class Pipe {
   }
 }
 
+class Agennt {
+  constructor(model) {
+
+  }
+}
+
 // Function to generate pipes at random position
 function generatePipes() {
   const y = HOLE_MARGIN * HEIGHT + Math.random() * (HEIGHT * (1 - 2 * HOLE_MARGIN));
